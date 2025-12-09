@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageCircleHeart } from "lucide-react"; // 아이콘 변경 추천
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -13,32 +13,33 @@ const HeroSection = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           
-          {/* Minimalist Badge */}
+          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-stone-200 bg-white mb-10">
             <span className="w-1.5 h-1.5 rounded-full bg-stone-900" />
             <span className="text-xs uppercase tracking-widest font-medium text-stone-500">
-              EST. 2025
+              SINCE 2025
             </span>
           </div>
-
-          {/* Premium Typography Headline */}
-          <h1 className="font-serif text-5xl md:text-7xl font-medium text-stone-900 leading-[1.1] tracking-tight mb-8">
-            Curated companionship for the <i className="font-serif italic text-stone-500">ageless mind.</i>
-          </h1>
-
-          {/* Clean Subheadline */}
-          <p className="text-lg md:text-xl text-stone-600 max-w-xl mx-auto mb-12 font-light leading-relaxed">
-            An intelligent bridge to new friendships. We listen, learn, and connect you with peers who share your story.
-          </p>
-
-          {/* High Contrast Buttons */}
+{/* Headline 수정 */}
+<h1 className="font-serif font-medium text-stone-900 leading-tight tracking-tight mb-8">
+  {/* 첫 번째 줄: text-2xl(모바일) ~ text-5xl(PC)로 조정 */}
+  <span className="block text-3xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-4 word-keep-all">
+    다정한 말동무가 되어드리고,
+  </span>
+  
+  {/* 두 번째 줄 동일하게 적용 */}
+  <span className="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-stone-500 italic font-serif word-keep-all">
+    소중한 인연을 이어드립니다.
+  </span>
+</h1>
+          {/* Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button 
               size="lg"
               onClick={handleClick}
               className="rounded-full px-10 h-14 text-base bg-stone-900 hover:bg-stone-800 text-white shadow-none transition-all duration-300 w-full sm:w-auto"
             >
-              Start Membership
+              말벗 시작하기
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             
@@ -47,14 +48,14 @@ const HeroSection = () => {
               size="lg"
               className="rounded-full px-10 h-14 text-base border-stone-300 text-stone-600 hover:bg-stone-100 hover:text-stone-900 w-full sm:w-auto"
             >
-              View Sample Call
+              대화 예시 들어보기
             </Button>
           </div>
 
-          {/* Minimal Social Proof */}
+          {/* Social Proof */}
           <div className="mt-20 pt-10 border-t border-stone-200/60">
             <p className="text-sm text-stone-400 font-medium tracking-wide uppercase">
-              Trusted by 5,000+ Families
+              벌써 5,000분 이상의 어르신이 새로운 벗을 만나셨습니다
             </p>
           </div>
         </div>

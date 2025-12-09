@@ -16,44 +16,53 @@ const Footer = () => {
   };
 
   return (
-    <footer id="families" className="bg-foreground text-primary-foreground">
+    // bg-foreground가 보통 어두운 색이므로, 텍스트는 밝은색(primary-foreground)을 유지했습니다.
+    <footer id="families" className="bg-stone-900 text-stone-50">
       {/* Newsletter Section */}
-      <div className="border-b border-primary-foreground/10">
+      <div className="border-b border-white/10">
         <div className="container mx-auto px-6 lg:px-8 py-16">
           <div className="max-w-2xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-primary-foreground/10 mb-6">
+            
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 mb-6">
               <Mail className="w-4 h-4" />
-              <span className="text-sm font-medium">Free Sample</span>
+              <span className="text-sm font-medium">무료 체험</span>
             </div>
 
-            <h2 className="font-serif text-accessible-xl md:text-accessible-2xl font-semibold mb-4">
-              Get a Sample Newsletter
+            {/* Heading */}
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4 word-keep-all">
+              나만을 위한 이야기,<br className="hidden md:block"/> 미리 받아보세요.
             </h2>
-            <p className="text-lg opacity-80 mb-8">
-              See what a personalized weekly digest looks like. We'll send you an example 
-              curated just for you.
+            
+            {/* Description */}
+            <p className="text-lg opacity-80 mb-8 word-keep-all">
+              어르신의 취향에 딱 맞춘 주간 소식지가 어떤 모습인지 보여드릴게요. 
+              이메일 주소를 남겨주시면 샘플을 무료로 보내드립니다.
             </p>
 
+            {/* Form / Success Message */}
             {isSubmitted ? (
-              <div className="flex items-center justify-center gap-3 p-6 rounded-2xl bg-primary-foreground/10">
+              <div className="flex items-center justify-center gap-3 p-6 rounded-2xl bg-white/10">
                 <CheckCircle2 className="w-6 h-6 text-golden" />
-                <p className="text-lg">Thank you! Check your inbox soon.</p>
+                <p className="text-lg word-keep-all">
+                  감사합니다! 곧 이메일로 따뜻한 이야기를 보내드릴게요.
+                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="이메일 주소를 입력해주세요"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="flex-1 h-14 px-6 text-lg rounded-pill bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50 focus:border-golden"
+                  className="flex-1 h-14 px-6 text-lg rounded-full bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-golden"
                 />
                 <Button 
                   type="submit"
-                  className="h-14 px-8 rounded-pill bg-peach hover:bg-peach-dark text-primary-foreground font-semibold shadow-glow-peach transition-all hover:scale-105"
+                  className="h-14 px-8 rounded-full bg-peach hover:bg-peach-dark text-stone-900 font-semibold shadow-lg transition-all hover:scale-105 shrink-0"
                 >
-                  Send Me One
+                  샘플 받아보기
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </form>
@@ -65,35 +74,40 @@ const Footer = () => {
       {/* Main Footer */}
       <div className="container mx-auto px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-peach to-golden flex items-center justify-center">
-              <Heart className="w-5 h-5 text-primary-foreground" fill="currentColor" />
-            </div>
-            <span className="font-serif text-2xl font-semibold">
-              EasyConnect
-            </span>
-          </a>
+<a href="/" className="flex items-center gap-2 group">
+  {/* 기존 하트 아이콘 div를 삭제하고 img 태그로 교체 */}
+  <img 
+    src="/logo.png"  
+    alt="말벗 로고" 
+    className="w-10 h-10 object-contain group-hover:scale-110 transition-transform" 
+  />
+  
+  <span className="font-serif text-2xl font-semibold text-white">
+    말벗
+  </span>
+</a>
 
           {/* Links */}
-          <div className="flex flex-wrap items-center justify-center gap-8">
-            <a href="#vision" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-              Vision
+          <div className="flex flex-wrap items-center justify-center gap-8 text-sm md:text-base">
+            <a href="#vision" className="text-white/70 hover:text-white transition-colors">
+              말벗 소개
             </a>
-            <a href="#process" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-              Our Process
+            <a href="#process" className="text-white/70 hover:text-white transition-colors">
+              이용 방법
             </a>
-            <a href="#community" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-              Community
+            <a href="#community" className="text-white/70 hover:text-white transition-colors">
+              사랑방 (커뮤니티)
             </a>
-            <a href="#families" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-              For Families
+            <a href="#families" className="text-white/70 hover:text-white transition-colors">
+              가족을 위한 안내
             </a>
           </div>
 
           {/* Copyright */}
-          <p className="text-primary-foreground/50 text-sm">
-            © 2025 EasyConnect. Made with love.
+          <p className="text-white/50 text-sm">
+            © 2025 말벗 (Malbeot). 마음을 담아 만듭니다.
           </p>
         </div>
       </div>
