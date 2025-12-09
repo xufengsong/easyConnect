@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Golden Hour - Warm, nostalgic color palette */
+    --background: 30 60% 98%;
+    --foreground: 25 30% 15%;
+
+    --card: 30 50% 99%;
+    --card-foreground: 25 30% 15%;
+
+    --popover: 30 50% 99%;
+    --popover-foreground: 25 30% 15%;
+
+    /* Warm peach primary */
+    --primary: 20 80% 62%;
+    --primary-foreground: 30 60% 98%;
+
+    /* Soft cream secondary */
+    --secondary: 35 45% 94%;
+    --secondary-foreground: 25 30% 20%;
+
+    --muted: 30 30% 90%;
+    --muted-foreground: 25 20% 45%;
+
+    /* Golden accent */
+    --accent: 38 92% 60%;
+    --accent-foreground: 25 30% 15%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 30 60% 98%;
+
+    --border: 30 30% 88%;
+    --input: 30 30% 88%;
+    --ring: 20 80% 62%;
+
+    --radius: 1rem;
+
+    /* Custom tokens for EasyConnect */
+    --peach: 20 80% 62%;
+    --peach-light: 20 80% 92%;
+    --peach-dark: 20 75% 52%;
+    --golden: 38 92% 60%;
+    --golden-light: 38 90% 85%;
+    --rose: 350 70% 85%;
+    --rose-light: 350 60% 95%;
+    --cream: 35 60% 97%;
+    --cream-warm: 30 50% 94%;
+    --amber: 30 90% 55%;
+    --terracotta: 15 60% 50%;
+    --sage: 140 20% 75%;
+    --text-warm: 25 30% 15%;
+    --text-muted-warm: 25 20% 45%;
+
+    /* Gradient tokens */
+    --gradient-warm: linear-gradient(135deg, hsl(350 60% 95%) 0%, hsl(30 80% 95%) 50%, hsl(38 90% 95%) 100%);
+    --gradient-peach: linear-gradient(180deg, hsl(20 80% 92%) 0%, hsl(35 60% 97%) 100%);
+    --gradient-golden: linear-gradient(135deg, hsl(30 60% 98%) 0%, hsl(38 90% 95%) 100%);
+
+    --sidebar-background: 35 45% 96%;
+    --sidebar-foreground: 25 30% 20%;
+    --sidebar-primary: 20 80% 62%;
+    --sidebar-primary-foreground: 30 60% 98%;
+    --sidebar-accent: 35 40% 92%;
+    --sidebar-accent-foreground: 25 30% 20%;
+    --sidebar-border: 30 30% 88%;
+    --sidebar-ring: 20 80% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .gradient-warm {
+    background: linear-gradient(135deg, hsl(350 60% 95%) 0%, hsl(30 80% 95%) 50%, hsl(38 90% 95%) 100%);
+  }
+
+  .gradient-peach {
+    background: linear-gradient(180deg, hsl(20 80% 92%) 0%, hsl(35 60% 97%) 100%);
+  }
+
+  .gradient-golden {
+    background: linear-gradient(135deg, hsl(30 60% 98%) 0%, hsl(38 90% 95%) 100%);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(350 55% 96%) 0%, hsl(25 75% 94%) 40%, hsl(38 85% 92%) 100%);
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(135deg, hsl(20 80% 55%) 0%, hsl(38 92% 55%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}

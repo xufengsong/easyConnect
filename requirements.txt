@@ -1,4 +1,5 @@
 asgiref==3.9.1
+adrf==0.1.12
 channels==4.3.1
 dj_database_url==3.0.1
 Django==5.2.7
@@ -29,3 +30,4 @@ pydantic_core==2.33.2
 redis==5.2.1
 whitenoise==6.9.0
 psycopg2-binary==2.9.10
+langchain_ollama==1.0.0
