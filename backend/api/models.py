@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import timedelta
-from pgvector.django import VectorField
+from pgvector.django import VectorField, HnswIndex
 import uuid
 
 
@@ -40,6 +40,13 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+    
+    embedding = VectorField(dimensions=768, null=True, blank=True)
+
+    interest = models.JSONField(
+
+        null=True,
+    )
 
     # Subscription fields
     subscription_tier = models.ForeignKey(
@@ -59,6 +66,17 @@ class User(AbstractUser):
     daily_translations_used = models.IntegerField(default=0)
     last_translation_date = models.DateField(null=True, blank=True)
     last_monthly_reset = models.DateField(null=True, blank=True)
+
+    indexes = [
+        # Create an HNSW index for cosine distance ('opclasses': ['vector_cosine_ops'])
+        HnswIndex(
+            name='user_embedding_index',
+            fields=['embedding'],
+            m=16,
+            ef_construction=64,
+            opclasses=['vector_cosine_ops']
+        )
+    ]
 
 
     def reset_usage_counters_if_needed(self):
@@ -136,11 +154,42 @@ class PaymentTransaction(models.Model):
         return f"Payment {self.paypal_order_id} - {self.user.email} - {self.amount} {self.currency}"
     
 
+class ChatSession(models.Model):
+    """
+    Represents a single conversation session.
+    Groups multiple ChatMemory messages together.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_sessions")
+    
+    # Metadata for the session
+    started_at = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=255, blank=True, default="New Conversation")
+
+    def __str__(self):
+        return f"Session {self.id} - {self.started_at.strftime('%Y-%m-%d')}"
+
 
 class ChatMemory(models.Model):
     """
-    Model to store chat data for each Project
+    Individual messages within a specific session.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    STATUS_CHOICES = [
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('error', 'Error'),
+    ]
+
+    # LINK TO SESSION INSTEAD OF USER/PROJECT DIRECTLY
+    session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="messages", null=True)
+    
+    item_id = models.CharField(max_length=100, unique=True, null=True)
+    message = models.TextField(null=True)
+    is_ai = models.BooleanField(default=False, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed', null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        ordering = ['created_at']
 
     

@@ -12,6 +12,8 @@ urlpatterns = [
     path('get-ws-token/', views.get_ws_token, name='get_ws_token'),
     path('get-voice-token/', views.get_voice_token, name="get_voice_token"),
     path('chat/', views.chat_response, name='chat_response'),
+    path('save-chat-memory/', views.save_chat_memory, name='save_chat_memory'),
+    path('find-similar-friends/', views.find_similar_friends, name='find_friend'),
 
     # Subscription and Payment URLs
     path('subscription-tiers/', views.get_subscription_tiers, name='get_subscription_tiers'),

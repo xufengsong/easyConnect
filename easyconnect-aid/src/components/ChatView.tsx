@@ -7,6 +7,7 @@ import AudioWave from "./AudioWave";
 import ChatMessage from "./ChatMessage";
 import axiosInstance from "../axiosInstance";
 import { RealtimeAgent, RealtimeSession } from '@openai/agents-realtime';
+import { v4 as uuidv4 } from 'uuid';
 
 interface UIMessage {
   id: string;
@@ -23,6 +24,29 @@ const ChatView = () => {
   
   const sessionRef = useRef<RealtimeSession | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef<string>(uuidv4());
+
+  const saveMessageToBackend = async (messages: UIMessage[]) => {
+    const completedMessages = messages.filter(msg => msg.status === 'completed');
+
+    if (completedMessages.length === 0) return;
+
+    try {
+      // 2. Send the batch to the backend
+      await axiosInstance.post('/api/save-chat-memory/', {
+        session_id: sessionIdRef.current,
+        messages: completedMessages.map(msg => ({
+          item_id: msg.id,
+          message: msg.message,
+          is_ai: msg.isAI,
+          status: msg.status
+        }))
+      });
+      console.log(`Saved ${completedMessages.length} messages to backend.`);
+    } catch (error) {
+      console.error("Failed to save messages", error);
+    }
+  };
 
   // Auto-scroll logic
   const scrollToBottom = () => {
@@ -123,7 +147,7 @@ const ChatView = () => {
     };
   }, []);
 
-  const toggleListening = useCallback(() => {
+  const toggleListening = useCallback(async () => {
     const session = sessionRef.current;
     if (!session || !isConnected) return;
 
@@ -134,9 +158,12 @@ const ChatView = () => {
         session.mute(false);
     } else {
         session.mute(true);
+        console.log(conversationItems);
+        await saveMessageToBackend(conversationItems);
+        console.log("Is saving to backend database");
         session.interrupt();
     }
-  }, [isListening, isConnected]);
+  }, [isListening, isConnected, conversationItems]);
 
   return (
     // ADDED: min-h-0 prevents flex items from overflowing their container

@@ -178,7 +178,7 @@ const Login = () => {
                       <Input
                         id="login-email"
                         type="email"
-                        placeholder="hello@example.com"
+                        placeholder="arthur.hayes@example.com"
                         className="h-14 px-4 rounded-2xl text-accessible-base bg-secondary/30 border-transparent focus:border-teal focus:ring-teal/20 transition-all"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -192,7 +192,7 @@ const Login = () => {
                       <Input
                         id="login-password"
                         type="password"
-                        placeholder="••••••••"
+                        placeholder="password123"
                         className="h-14 px-4 rounded-2xl text-accessible-base bg-secondary/30 border-transparent focus:border-teal focus:ring-teal/20 transition-all"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}

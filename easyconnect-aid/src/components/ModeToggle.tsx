@@ -1,7 +1,7 @@
-import { MessageCircle, Newspaper } from "lucide-react";
+import { MessageCircle, Newspaper, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Mode = "chat" | "news";
+type Mode = "chat" | "news" | "match";
 
 interface ModeToggleProps {
   mode: Mode;
@@ -38,6 +38,20 @@ const ModeToggle = ({ mode, onChange }: ModeToggleProps) => {
       >
         <Newspaper className="w-7 h-7" />
         <span>News Reader</span>
+      </button>
+      <button
+        onClick={() => onChange("match")}
+        className={cn(
+          "flex items-center gap-3 px-8 py-5 rounded-xl text-accessible-lg font-semibold transition-all duration-300",
+          mode === "match"
+            ? "bg-teal text-primary-foreground shadow-soft-lg"
+            : "text-foreground hover:bg-muted"
+        )}
+        aria-pressed={mode === "match"}
+        aria-label="Switch to Match mode"
+      >
+        <Handshake className="w-7 h-7" />
+        <span>Match</span>
       </button>
     </div>
   );

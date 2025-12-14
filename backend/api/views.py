@@ -1,4 +1,4 @@
-from .models import User, SubscriptionTier, PaymentTransaction
+from .models import User, SubscriptionTier, PaymentTransaction, ChatSession, ChatMemory
 # Create your views here.
 import logging
 # api/views.py
@@ -33,8 +33,8 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from django.utils import timezone
-from pgvector.django import L2Distance
-from langchain_ollama import ChatOllama
+from pgvector.django import L2Distance, CosineDistance
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 
 # Load environment variables from .env file
@@ -571,3 +571,204 @@ def health_check(request):
 # ==================================================================================
 # Websocket Ends
 # ==================================================================================
+
+
+# Helper function to get embedding (Refactor into a utility file in production)
+def get_embedding_openai(text, model="text-embedding-3-small"):
+    text = text.replace("\n", " ")
+    return openai.embeddings.create(input=[text], model=model, dimensions=768).data[0].embedding
+
+
+def get_embedding_ollama(text, model="nomic-embed-text:v1.5"):
+    embeddings = OllamaEmbeddings(
+        model="nomic-embed-text:v1.5",
+    )
+    
+    text = text.replace("\n", " ")
+    return embeddings.embed_query(text)
+
+
+@api_view(['POST']) 
+@permission_classes([IsAuthenticated]) 
+def save_chat_memory(request):
+    data = request.data
+    session_id = data.get('session_id')
+    messages_data = data.get('messages', []) 
+    
+    if not session_id:
+        return Response({"error": "Session ID is required"}, status=400)
+
+    # 1. Get or Create the Session
+    session, created = ChatSession.objects.get_or_create(
+        id=session_id,
+        defaults={'user': request.user}
+    )
+    
+    saved_count = 0
+
+    # ---------------------------------------------------------
+    # PART A: SAVE CHAT HISTORY (Atomic Transaction)
+    # ---------------------------------------------------------
+    try:
+        with transaction.atomic():
+            # Clear existing messages to prevent duplicates/overwrites
+            ChatMemory.objects.filter(session=session).delete()
+
+            # Prepare new messages
+            new_memories = []
+            for msg in messages_data:
+                safe_item_id = msg.get('item_id') or str(uuid.uuid4())
+
+                memory = ChatMemory(
+                    session=session,
+                    item_id=safe_item_id,
+                    message=msg.get('message'),
+                    is_ai=msg.get('is_ai'),
+                    status=msg.get('status')
+                )
+                new_memories.append(memory)
+
+            ChatMemory.objects.bulk_create(new_memories)
+            saved_count = len(new_memories)
+
+    except Exception as e:
+        return Response({"error": f"Failed to save DB: {str(e)}"}, status=500)
+
+    # ---------------------------------------------------------
+    # PART B: UPDATE USER EMBEDDING (Analysis)
+    # ---------------------------------------------------------
+    # We run this AFTER the transaction so the DB is up to date.
+    embedding_status = "skipped"
+    
+    try:
+        user = request.user
+        
+        # 1. Fetch updated full history for the user
+        memories = ChatMemory.objects.filter(
+            session__user=user,
+            message__isnull=False
+        ).order_by('created_at')
+
+        if memories.exists():
+            # 2. Aggregate Text
+            full_text = "\n".join([f"{'AI' if m.is_ai else 'User'}: {m.message}" for m in memories])
+
+            # 3. Truncate if necessary (Safety limit)
+            max_chars = 30000 
+            if len(full_text) > max_chars:
+                full_text = full_text[-max_chars:]
+
+            # 4. Generate Embedding (Ollama)
+            # Note: This might take 1-3 seconds depending on your GPU/CPU
+            vector = get_embedding_ollama(full_text)
+
+            # 5. Save to User
+            user.embedding = vector
+            user.save()
+            embedding_status = "updated"
+            
+    except Exception as e:
+        # We catch embedding errors separately so we don't return a 500 
+        # if the chat saved successfully but the embedding failed.
+        print(f"Embedding Analysis Error: {e}")
+        embedding_status = f"error: {str(e)}"
+
+    return Response({
+        "status": "success", 
+        "saved_count": saved_count,
+        "embedding_status": embedding_status
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def analyze_user_chat_embedding(request):
+    user = request.user
+    
+    # 1. Fetch all chat history for this user
+    # We filter by the user's sessions to get all their messages
+    memories = ChatMemory.objects.filter(
+        session__user=user,
+        message__isnull=False  # Exclude empty messages
+    ).order_by('created_at')
+
+    if not memories.exists():
+        return Response({"message": "No chat history found to analyze."}, status=400)
+
+    # 2. Aggregate Text
+    # We combine them into a single string. 
+    # Optional: You might want to weigh recent messages more heavily or limit the token count.
+    full_text = "\n".join([f"{'AI' if m.is_ai else 'User'}: {m.message}" for m in memories])
+
+    # Truncate if necessary (OpenAI text-embedding-3-small limit is ~8k tokens)
+    # Simple character limit check (approx 4 chars per token)
+    max_chars = 30000 
+    if len(full_text) > max_chars:
+        # Keep the most recent conversation parts
+        full_text = full_text[-max_chars:]
+
+    try:
+        # 3. Generate Embedding
+        vector = get_embedding_ollama(full_text)
+
+        # 4. Save to User Profile
+        # Assuming you extended User with a profile or have a custom User model
+        # If using a separate Profile model:
+        # profile = user.profile 
+        # profile.embedding = vector
+        # profile.save()
+        
+        # If you are patching the User object directly (requires custom user model or JSON field):
+        user.embedding = vector 
+        user.save()
+
+        return Response({
+            "status": "success", 
+            "message": "User embedding updated.", 
+            "data_length": len(full_text)
+        })
+
+    except Exception as e:
+        print(f"Embedding Error: {e}")
+        return Response({"error": str(e)}, status=500)
+    
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def find_similar_friends(request):
+    current_user = request.user
+
+    # 1. Check if the requesting user has an embedding analyzed yet
+    if current_user.embedding is None:
+        return Response(
+            {"error": "Your profile has not been analyzed yet. Please chat more to generate an embedding."}, 
+            status=400
+        )
+
+    # 2. Perform the Vector Search
+    # We annotate the distance, filter out users without embeddings, exclude self, and sort.
+    similar_users = User.objects.annotate(
+        distance=CosineDistance('embedding', current_user.embedding)
+    ).filter(
+        embedding__isnull=False
+    ).exclude(
+        id=current_user.id
+    ).order_by(
+        'distance'
+    )[:2]
+
+    # 3. Format the response
+    data = []
+    for user in similar_users:
+        data.append({
+            "id": user.id,
+            "name": user.name or user.email, # Fallback if name is blank
+            "similarity_score": 1 - user.distance, # Convert distance back to similarity (optional, for display)
+            "distance": user.distance
+        })
+
+    return Response({
+        "status": "success",
+        "matches": data
+    })
